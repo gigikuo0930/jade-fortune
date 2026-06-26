@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>岫玉雅集館｜今日玉籤</title>
+
+<!-- Open Graph / Facebook 分享預覽設定 -->
+<!-- ⚠️ 請把下面 og:url 和 og:image 換成你實際的 GitHub Pages 網址 -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="今日玉籤｜岫玉雅集館">
+<meta property="og:description" content="一籤一玉，照見今日心境。點一下，看看今天適合什麼玉氣。">
+<meta property="og:url" content="https://你的帳號.github.io/jade-fortune/">
+<meta property="og:image" content="https://你的帳號.github.io/jade-fortune/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="zh_TW">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="今日玉籤｜岫玉雅集館">
+<meta name="twitter:description" content="一籤一玉，照見今日心境。">
+<meta name="twitter:image" content="https://你的帳號.github.io/jade-fortune/og-image.png">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700;900&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+
+:root{
+  --paper:#F7F3EA;
+  --paper-deep:#EFE8D8;
+  --ink:#2C3D34;
+  --ink-soft:#5C4A3A;
+  --seal:#B8693C;
+  --seal-deep:#9A5430;
+  --line:#D8CFB8;
+  --jade-line:#9FB3A0;
+}
+
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'Noto Sans TC',sans-serif;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:28px 18px 48px;
+  position:relative;
+  overflow-x:hidden;
+}
+
+/* ambient texture */
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(184,105,60,0.05), transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(159,179,160,0.08), transparent 40%);
+  pointer-events:none;
+  z-index:0;
+}
+
+#app{width:100%;max-width:400px;position:relative;z-index:1}
+
+header{text-align:center;margin-bottom:28px}
+.eyebrow{
+  font-size:12px;
+  letter-spacing:0.25em;
+  color:var(--seal);
+  font-weight:500;
+  margin-bottom:8px;
+}
+h1{
+  font-family:'Noto Serif TC',serif;
+  font-size:26px;
+  font-weight:700;
+  color:var(--ink);
+  letter-spacing:0.05em;
+}
+.sub{
+  font-size:13px;
+  color:var(--ink-soft);
+  margin-top:6px;
+  opacity:0.85;
+}
+
+/* draw card */
+.draw-card{
+  width:100%;
+  aspect-ratio:3/4;
+  max-height:480px;
+  background:linear-gradient(165deg,var(--paper-deep),var(--paper));
+  border:1px solid var(--line);
+  border-radius:4px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  position:relative;
+  transition:transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow:0 1px 3px rgba(44,61,52,0.08);
+}
+.draw-card:active{transform:scale(0.98)}
+.draw-card::before,
+.draw-card::after{
+  content:'';
+  position:absolute;
+  width:28px;
+  height:28px;
+  border:1px solid var(--jade-line);
+  opacity:0.6;
+}
+.draw-card::before{top:16px;left:16px;border-right:none;border-bottom:none}
+.draw-card::after{bottom:16px;right:16px;border-left:none;border-top:none}
+
+.draw-glyph{
+  font-family:'Noto Serif TC',serif;
+  font-size:15px;
+  letter-spacing:0.6em;
+  color:var(--ink-soft);
+  writing-mode:vertical-rl;
+  margin-bottom:18px;
+}
+.draw-prompt{
+  font-family:'Noto Serif TC',serif;
+  font-size:20px;
+  font-weight:700;
+  color:var(--ink);
+  letter-spacing:0.1em;
+}
+.draw-hint{
+  font-size:12px;
+  color:var(--ink-soft);
+  margin-top:10px;
+  opacity:0.7;
+}
+.draw-card.loading .draw-prompt{font-size:15px;letter-spacing:0.05em;animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:0.5}50%{opacity:1}}
+
+/* result */
+#result{display:none;width:100%}
+#result.show{display:block;animation:riseIn 0.5s ease both}
+@keyframes riseIn{
+  from{opacity:0;transform:translateY(14px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.slip{
+  background:linear-gradient(170deg,#FBF8F0,var(--paper));
+  border:1px solid var(--line);
+  border-radius:4px;
+  padding:32px 24px 28px;
+  position:relative;
+}
+.slip-number{
+  font-size:11px;
+  letter-spacing:0.2em;
+  color:var(--seal);
+  text-align:center;
+  margin-bottom:4px;
+}
+.jade-name{
+  font-family:'Noto Serif TC',serif;
+  font-size:24px;
+  font-weight:700;
+  text-align:center;
+  color:var(--ink);
+  margin-bottom:2px;
+}
+.jade-tag{
+  font-size:12px;
+  color:var(--ink-soft);
+  text-align:center;
+  margin-bottom:22px;
+  opacity:0.75;
+}
+
+.poem-wrap{
+  display:flex;
+  justify-content:center;
+  gap:14px;
+  padding:20px 0 22px;
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  margin-bottom:20px;
+}
+.poem-line{
+  writing-mode:vertical-rl;
+  font-family:'Noto Serif TC',serif;
+  font-size:17px;
+  font-weight:500;
+  color:var(--ink);
+  letter-spacing:0.3em;
+  line-height:1.9;
+}
+
+.section-label{
+  font-size:11px;
+  letter-spacing:0.15em;
+  color:var(--seal);
+  margin-bottom:6px;
+}
+.trait{
+  font-size:14.5px;
+  line-height:1.75;
+  color:var(--ink);
+  margin-bottom:18px;
+}
+.fortune{
+  font-size:14.5px;
+  line-height:1.8;
+  color:var(--ink);
+  margin-bottom:26px;
+}
+
+.seal{
+  position:absolute;
+  top:24px;
+  right:22px;
+  width:34px;
+  height:34px;
+  border:1.5px solid var(--seal);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:'Noto Serif TC',serif;
+  font-size:15px;
+  font-weight:700;
+  color:var(--seal);
+  transform:rotate(2deg);
+  opacity:0.85;
+}
+
+.actions{display:flex;gap:10px;margin-bottom:18px}
+.btn{
+  flex:1;
+  height:46px;
+  border:none;
+  border-radius:3px;
+  font-size:14px;
+  font-weight:500;
+  font-family:'Noto Sans TC',sans-serif;
+  cursor:pointer;
+  transition:opacity 0.15s ease, transform 0.15s ease;
+  letter-spacing:0.05em;
+}
+.btn:active{transform:scale(0.97)}
+.btn-share{
+  background:transparent;
+  border:1px solid var(--ink-soft);
+  color:var(--ink-soft);
+}
+.btn-share:hover{opacity:0.7}
+.btn-again{
+  background:var(--ink);
+  color:var(--paper);
+}
+
+.gift-toggle{
+  text-align:center;
+  font-size:12.5px;
+  color:var(--seal);
+  text-decoration:none;
+  border-bottom:1px dashed var(--seal);
+  padding-bottom:2px;
+  cursor:pointer;
+  display:block;
+  margin:0 auto;
+  width:fit-content;
+}
+
+.gift-card{
+  margin-top:14px;
+  background:var(--paper-deep);
+  border:1px dashed var(--jade-line);
+  border-radius:3px;
+  padding:16px;
+  text-align:center;
+  display:none;
+}
+.gift-card.show{display:block;animation:riseIn 0.4s ease both}
+.gift-label{
+  font-size:11px;
+  color:var(--ink-soft);
+  letter-spacing:0.1em;
+  margin-bottom:6px;
+}
+.gift-detail{
+  font-size:14px;
+  color:var(--ink);
+  font-weight:500;
+  margin-bottom:10px;
+}
+.gift-link{
+  display:inline-block;
+  font-size:12.5px;
+  color:var(--seal);
+  text-decoration:underline;
+  cursor:pointer;
+}
+
+footer{
+  margin-top:22px;
+  text-align:center;
+  font-size:11px;
+  color:var(--ink-soft);
+  opacity:0.5;
+  letter-spacing:0.05em;
+}
+
+.tip{
+  position:fixed;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  background:var(--ink);
+  color:var(--paper);
+  padding:16px 26px;
+  border-radius:4px;
+  font-size:14px;
+  z-index:9999;
+  display:none;
+  text-align:center;
+  line-height:1.6;
+  max-width:80%;
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:0.01ms !important}
+}
+
+@media (max-width:360px){
+  .poem-line{font-size:15px}
+  .jade-name{font-size:21px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="eyebrow">岫玉雅集館</div>
+    <h1>今日玉籤</h1>
+    <div class="sub">一籤一玉，照見今日心境</div>
+  </header>
+
+  <div class="draw-card" id="draw">
+    <div class="draw-glyph">誠　心　抽　籤</div>
+    <div class="draw-prompt">點選求籤</div>
+    <div class="draw-hint">每日限抽一次</div>
+  </div>
+
+  <div id="result"></div>
+
+  <footer>静心一刻・岫玉雅集館</footer>
+</div>
+
+<div class="tip" id="tip"></div>
+
+<script>
+const SHOP = 'https://shopee.tw/gigikuo930';
+
+const JADES = [
+  {
+    key:'lao', name:'老玉', tag:'黃白溫潤',
+    poem:['老玉凝脂歲月藏','不爭顏色自生光','平心靜氣諸事順','厚積薄發是良方'],
+    trait:'你不愛搶第一，但時間久了大家都知道你最可靠。',
+    fortune:'今天適合處理需要耐心的事，急不來的事就慢慢來，沉穩會帶來意外的好結果。'
+  },
+  {
+    key:'shenlu', name:'深綠岫玉', tag:'墨綠濃郁',
+    poem:['深綠岫玉色最濃','氣度沉厚不張揚','今朝運勢藏鋒處','靜中自有萬鈞重'],
+    trait:'你看起來低調，但其實心裡很有分量，該出手時絕不含糊。',
+    fortune:'今天適合處理重要決定，表面平靜但暗中順利，堅持原本的判斷就對了。'
+  },
+  {
+    key:'hushui', name:'湖水綠', tag:'清透靈動',
+    poem:['湖水綠映春光好','心思靈活路自寬','今朝靈感如泉湧','順流而下事事安'],
+    trait:'你腦筋轉得快，遇到問題總有辦法繞過去。',
+    fortune:'今天適合動腦發想新點子，靈感特別旺，邊走邊調整反而比硬計畫更順。'
+  },
+  {
+    key:'qianlu', name:'淺綠岫玉', tag:'清新溫和',
+    poem:['淺綠輕盈似初晴','溫和待人少紛爭','今朝心境如微風','事事和緩漸漸成'],
+    trait:'你脾氣好、不愛跟人爭，相處起來讓人很放鬆。',
+    fortune:'今天適合處理人際間的小摩擦，溫和的態度比強硬講道理更有用。'
+  },
+  {
+    key:'huanglu', name:'黃綠岫玉', tag:'暖調活潑',
+    poem:['黃綠交融透暖意','活潑開朗笑常隨','今朝喜事輕輕至','心情明亮步步隨'],
+    trait:'你天生活力足，朋友聚會總少不了你。',
+    fortune:'今天心情和人緣都不錯，適合多跟人互動，會有小小的好消息上門。'
+  },
+  {
+    key:'baiyu', name:'白玉', tag:'米白凝潔',
+    poem:['白玉如脂淨無塵','心地坦然不藏真','今朝諸事宜從簡','清清白白自安心'],
+    trait:'你做人實在，不喜歡拐彎抹角，跟你相處很省心。',
+    fortune:'今天適合把事情簡化處理，不用想得太複雜，誠實面對最輕鬆。'
+  },
+  {
+    key:'huayu', name:'花玉', tag:'斑彩獨特',
+    poem:['花玉斑斕各有姿','天生與眾不同時','莫嫌雜色掩光彩','獨特本是好運資'],
+    trait:'你不是標準款，但正是這種獨特讓人記得你。',
+    fortune:'今天適合做點不一樣的嘗試，別跟別人比較，你的特別之處正是優勢。'
+  },
+  {
+    key:'moyu', name:'墨玉', tag:'深沉內斂',
+    poem:['墨玉深沉藏不露','內裡自有一片天','今朝宜靜不宜躁','韜光養晦待時遷'],
+    trait:'你心思細膩，很多事情看在眼裡但不會隨便說出口。',
+    fortune:'今天適合觀察、不適合搶快，先沉住氣，時機到了自然水落石出。'
+  }
+];
+
+const GIFTS = ['八五折禮遇','九折禮遇','九五折禮遇'];
+
+const draw = document.getElementById('draw');
+const result = document.getElementById('result');
+const tip = document.getElementById('tip');
+
+function msg(t){
+  tip.innerHTML = t.replace(/\n/g,'<br>');
+  tip.style.display = 'block';
+  setTimeout(()=>tip.style.display='none',2200);
+}
+
+function todayKey(){ return new Date().toDateString(); }
+
+function checkDrawn(){
+  const d = localStorage.getItem('xy_date');
+  if(d === todayKey()){
+    const idx = parseInt(localStorage.getItem('xy_idx'),10);
+    const gift = localStorage.getItem('xy_gift');
+    if(!isNaN(idx) && JADES[idx]){
+      render(idx, gift, true);
+      draw.style.display = 'none';
+      return false;
+    }
+  }
+  return true;
+}
+
+function pickJade(){
+  return Math.floor(Math.random()*JADES.length);
+}
+function pickGift(){
+  return GIFTS[Math.floor(Math.random()*GIFTS.length)];
+}
+
+function render(idx, gift, silent){
+  const j = JADES[idx];
+  const num = String(idx+1).padStart(2,'0');
+
+  result.innerHTML = `
+    <div class="slip">
+      <div class="seal">籤</div>
+      <div class="slip-number">第 ${num} 籤</div>
+      <div class="jade-name">${j.name}</div>
+      <div class="jade-tag">${j.tag}</div>
+
+      <div class="poem-wrap">
+        ${j.poem.map(l=>`<div class="poem-line">${l}</div>`).join('')}
+      </div>
+
+      <div class="section-label">性格速寫</div>
+      <div class="trait">${j.trait}</div>
+
+      <div class="section-label">今日運勢</div>
+      <div class="fortune">${j.fortune}</div>
+
+      <div class="actions">
+        <button class="btn btn-share" id="shareBtn">分享這支籤</button>
+        <button class="btn btn-again" id="shopBtn">逛逛岫玉雅集館</button>
+      </div>
+
+      <div class="gift-toggle" id="giftToggle">藏在籤尾的小心意 →</div>
+      <div class="gift-card" id="giftCard">
+        <div class="gift-label">岫玉雅集館留給你</div>
+        <div class="gift-detail">今日專屬 ${gift}</div>
+        <div class="gift-link" id="giftLink">前往賣場使用</div>
+      </div>
+    </div>
+  `;
+  result.classList.add('show');
+
+  document.getElementById('shareBtn').onclick = () => share(j, num, gift);
+  document.getElementById('shopBtn').onclick = () => window.open(SHOP,'_blank');
+  document.getElementById('giftLink').onclick = () => window.open(SHOP,'_blank');
+  document.getElementById('giftToggle').onclick = (e) => {
+    const card = document.getElementById('giftCard');
+    card.classList.toggle('show');
+    e.target.style.opacity = card.classList.contains('show') ? '0.4' : '1';
+  };
+
+  if(!silent){
+    localStorage.setItem('xy_date', todayKey());
+    localStorage.setItem('xy_idx', idx);
+    localStorage.setItem('xy_gift', gift);
+  }
+}
+
+function share(j, num, gift){
+  const txt = `我抽到岫玉雅集館的第${num}籤 — ${j.name}\n「${j.poem[0]}，${j.poem[1]}」\n${j.trait}\n\n來測測你今天適合什麼玉氣 → ${SHOP}`;
+  navigator.clipboard.writeText(txt).then(()=>{
+    msg('文案已複製\n貼到臉書分享吧');
+  }).catch(()=>{
+    msg('複製失敗，請手動截圖分享');
+  });
+}
+
+draw.onclick = () => {
+  draw.classList.add('loading');
+  draw.querySelector('.draw-prompt').textContent = '凝神感應中';
+  draw.querySelector('.draw-hint').textContent = '';
+  setTimeout(()=>{
+    const idx = pickJade();
+    const gift = pickGift();
+    draw.style.display = 'none';
+    render(idx, gift, false);
+  },1100);
+};
+
+checkDrawn();
+</script>
+</body>
+</html>
